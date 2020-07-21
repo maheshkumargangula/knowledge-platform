@@ -22,11 +22,13 @@ class H5PMimeTypeMgrImpl(implicit ss: StorageService) extends BaseMimeTypeManage
             val zipFile = new File(zippedFileName)
             val urls: Array[String] = uploadArtifactToCloud(zipFile, objectId, filePath)
             if (zipFile.exists) zipFile.delete
+            println("Before H5P snapshot folder upload: " + objectId)
             extractH5PPackageInCloud(objectId, extractionBasePath, node, "snapshot", false).map(resp =>
                 TelemetryManager.info("H5P content snapshot folder upload success for " + objectId)
             ) onFailure { case e: Throwable =>
                 TelemetryManager.error("H5P content snapshot folder upload failed for " + objectId, e.getCause)
             }
+            println("After H5P snapshot folder upload: " + objectId)
             Future { Map[String, AnyRef]("identifier" -> objectId, "artifactUrl" -> urls(IDX_S3_URL), "size" -> getFileSize(uploadFile).asInstanceOf[AnyRef], "s3Key" -> urls(IDX_S3_KEY)) }
         } else {
             TelemetryManager.error("ERR_INVALID_FILE" + "Please Provide Valid File! with file name: " + uploadFile.getName)

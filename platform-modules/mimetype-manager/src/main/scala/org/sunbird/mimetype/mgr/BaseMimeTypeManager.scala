@@ -3,6 +3,7 @@ package org.sunbird.mimetype.mgr
 import java.io.{File, FileInputStream, FileOutputStream, IOException}
 import java.net.URL
 import java.nio.file.{Files, Path, Paths}
+import java.util.concurrent.Executors
 import java.util.zip.{ZipEntry, ZipFile, ZipOutputStream}
 
 import org.apache.commons.io.{FileUtils, FilenameUtils}
@@ -41,6 +42,10 @@ class BaseMimeTypeManager(implicit ss: StorageService) {
 	val IDX_S3_URL = 1
 
 	protected val UPLOAD_DENIED_ERR_MSG = "FILE_UPLOAD_ERROR | Upload operation not supported for given mimeType"
+
+	implicit val uploadEC = ExecutionContext.fromExecutorService {
+		Executors.newFixedThreadPool(8)
+	}
 
 
 	def validateUploadRequest(objectId: String, node: Node, data: AnyRef)(implicit ec: ExecutionContext): Unit = {
@@ -212,7 +217,7 @@ class BaseMimeTypeManager(implicit ss: StorageService) {
 		}
 	}
 
-	def extractH5PPackageInCloud(objectId: String, extractionBasePath: String, node: Node, extractionType: String, slugFile: Boolean)(implicit ec: ExecutionContext): Future[List[String]] = {
+	def extractH5PPackageInCloud(objectId: String, extractionBasePath: String, node: Node, extractionType: String, slugFile: Boolean): Future[List[String]] = {
 		val mimeType = node.getMetadata.get("mimeType").asInstanceOf[String]
 		if(null == extractionType)
 			throw new ClientException("INVALID_EXTRACTION", "Error! Invalid Content Extraction Type.")

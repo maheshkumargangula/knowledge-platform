@@ -47,6 +47,7 @@ object UploadManager {
 	}
 
 	def updateNode(request: Request, identifier: String, mediaType: String, contentType: String, result: Map[String, AnyRef])(implicit oec: OntologyEngineContext, ec: ExecutionContext): Future[Response] = {
+		println("Before update node via upload: " + identifier)
 		val updatedResult = result - "identifier"
 		val artifactUrl = updatedResult.getOrElse("artifactUrl", "").asInstanceOf[String]
 		val size: Double = updatedResult.getOrElse("size", 0.asInstanceOf[Double]).asInstanceOf[Double]
@@ -62,6 +63,7 @@ object UploadManager {
 			DataNode.update(updateReq).map(node => {
 				if (StringUtils.equalsIgnoreCase("Asset", contentType) && MEDIA_TYPE_LIST.contains(mediaType) && null != node)
 					pushInstructionEvent(identifier, node)
+				println("After update node via upload: " + identifier)
 				getUploadResponse(node)
 			})
 		} else {
